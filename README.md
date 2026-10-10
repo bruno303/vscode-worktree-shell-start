@@ -73,6 +73,29 @@ Notes:
 
 - **Worktree Shell Start: Enable in this Workspace** — adds the `worktreeCreated` task entry to `.vscode/tasks.json`, preserving comments and formatting.
 - **Worktree Shell Start: Run Hook for Current Folder** — re-runs the operations against the current checkout. This is the fast way to iterate on the script without creating a worktree; if it fails, an error notification points at the task terminal.
+- **Worktree Shell Start: Show Diagnostics** — writes everything VS Code knows about the hook (trust state, resolved settings, whether a `worktree-shell-start` task is visible, its scope and `runOn`) to the output channel.
+
+## Where does the trigger have to live?
+
+The task entry is what makes the Git extension call the hook, so it has to exist in the workspace context:
+
+- **Per repository** (recommended — committable, so everyone on the project gets it): `.vscode/tasks.json`, added by **Worktree Shell Start: Enable in this Workspace**.
+- **Once for every repository**: the identical entry in your **user tasks** (`Tasks: Open User Tasks` from the Command Palette).
+
+The operations themselves come from the `worktreeShellStart.*` settings, which can also be set per workspace or globally in your user settings. Run **Worktree Shell Start: Show Diagnostics** to confirm that VS Code can actually see the task.
+
+## Understanding the log lines
+
+**`The worktree-shell-start task detection didn't contribute a task for the following configuration: … The task will be ignored.`**
+
+That message comes from VS Code, not from the hook, and it appears in **restricted (untrusted) windows**. Task detection runs there through a path that is *not* trust gated: it asks this extension to resolve the configured task, and the extension refuses to hand out a task that would execute operations from an untrusted workspace. VS Code 1.141 reports that refusal as an error, so a harmless notice task is contributed instead — in an untrusted window it prints `Hook not run: the workspace is not trusted…` and executes nothing.
+
+Newly created worktree windows hit this, because a fresh path has never been trusted and VS Code shows **Restricted Mode** in the title bar until you trust it. Worktree creation itself is unaffected: the hook already ran in the window you created the worktree from.
+
+**To be sure a run happened**, look at:
+
+1. the **Worktree hook** task terminal in the window that created the worktree — it prints the exported variables and the output of your operations, and
+2. `View → Output → Worktree Shell Start`, which logs `Hook finished successfully for <worktree path>.` (or the failing exit code together with the path).
 
 ## How it works
 
@@ -158,7 +181,8 @@ npm run typecheck
 
 ### When the trigger does not fire
 
-- **View → Output → Worktree Shell Start** — the provider logs why it skipped (disabled, empty operations, untrusted workspace).
+- **Worktree Shell Start: Show Diagnostics** — reports the trust state, the resolved settings, and whether a task of this type is visible to VS Code at all.
+- **View → Output → Worktree Shell Start** — every `resolveTask` call logs its decision (run, or which skip reason).
 - The **Git** extension output channel — it logs when a `worktreeCreated` task cannot be retargeted.
 - `"task.autoDetect": "off"` disables task providers, so the hook task is never resolved.
 - In an untrusted workspace the task service returns no tasks at all.

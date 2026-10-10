@@ -36,6 +36,17 @@ function toEnvRecord(env: Record<string, string | undefined>): Record<string, st
  * worktree) and for a manual run in any checkout.
  */
 export function runHook(argv: string[], env: Record<string, string | undefined>, cwd: string, io: RunnerIo): number {
+  // The extension asks for a notice instead of a task when it must not run the
+  // hook in this window (an untrusted workspace, for example). VS Code logs a
+  // scary "didn't contribute a task" error when a configured task resolves to
+  // nothing, so an explicit, harmless notice is contributed instead.
+  const noticeIndex = argv.indexOf('--notice');
+  if (noticeIndex !== -1) {
+    io.log(`[worktree-shell-start] Hook not run: ${argv[noticeIndex + 1] ?? 'the hook is not available here'}.`);
+    io.log('[worktree-shell-start] Check workspace trust and the Worktree Shell Start settings for this window.');
+    return 0;
+  }
+
   const configIndex = argv.indexOf('--config');
   const configArg = configIndex === -1 ? undefined : argv[configIndex + 1];
 

@@ -66,6 +66,11 @@
         "command": "worktreeShellStart.enable",
         "title": "Enable in this Workspace",
         "category": "Worktree Shell Start"
+      },
+      {
+        "command": "worktreeShellStart.diagnostics",
+        "title": "Show Diagnostics",
+        "category": "Worktree Shell Start"
       }
     ],
     "configuration": {

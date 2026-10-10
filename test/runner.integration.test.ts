@@ -168,6 +168,12 @@ describe('runner argument handling', () => {
     expect(result.stderr).toContain('not valid JSON');
   });
 
+  it('prints a notice without needing a repository', () => {
+    const result = runRunnerRaw(temp.path, ['--notice', 'the workspace is not trusted']);
+    expect(result.code).toBe(0);
+    expect(result.stdout).toContain('Hook not run: the workspace is not trusted');
+  });
+
   it('fails with 3 outside a git repository', () => {
     const result = runRunner(temp.path, { script: 'true', shell: 'sh' });
     expect(result.code).toBe(3);

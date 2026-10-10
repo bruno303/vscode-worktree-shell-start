@@ -1,8 +1,8 @@
 import * as vscode from 'vscode';
-import { enableInWorkspace, runHookForCurrentFolder } from './commands';
+import { enableInWorkspace, runHookForCurrentFolder, showDiagnostics } from './commands';
 import { decideSkip, readHookConfig, SECTION, TASK_TYPE } from './hookConfig';
 import { hasHookTaskEntry } from './tasksFile';
-import { HookTaskProvider, RUNNER_RELATIVE_PATH } from './taskProvider';
+import { describeScope, HookTaskProvider, RUNNER_RELATIVE_PATH } from './taskProvider';
 
 const HINT_DISMISSED_KEY = 'worktreeShellStart.missingTaskHintDismissed';
 
@@ -20,18 +20,24 @@ export function activate(context: vscode.ExtensionContext): void {
       runHookForCurrentFolder(context.extensionUri, log),
     ),
     vscode.commands.registerCommand('worktreeShellStart.enable', () => enableInWorkspace(log)),
+    vscode.commands.registerCommand('worktreeShellStart.diagnostics', async () => {
+      output.show(true);
+      await showDiagnostics(context, log);
+    }),
     vscode.tasks.onDidEndTaskProcess((event) => {
       const definition = event.execution.task.definition as { type?: unknown } | undefined;
       if (definition?.type !== TASK_TYPE) {
         return;
       }
+      const target = describeScope(event.execution.task);
       if (event.exitCode === 0) {
-        log('Hook finished successfully.');
+        log(`Hook finished successfully for ${target}.`);
         return;
       }
-      log(`Hook failed with exit code ${event.exitCode}.`);
+      log(`Hook failed with exit code ${String(event.exitCode)} for ${target}.`);
       void vscode.window.showErrorMessage(
-        `Worktree Shell Start: the hook failed with exit code ${event.exitCode}. See the task terminal for details.`,
+        `Worktree Shell Start: the hook failed with exit code ${String(event.exitCode)} for ${target}. ` +
+          'See the task terminal for details.',
       );
     }),
   );

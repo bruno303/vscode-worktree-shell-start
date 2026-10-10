@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { readHookConfig, decideSkip, skipReasonMessage, SECTION, TASK_TYPE } from './hookConfig';
-import { createExecution, TASK_SOURCE } from './taskProvider';
+import { createExecution, describeScope, RUNNER_RELATIVE_PATH, TASK_SOURCE } from './taskProvider';
 import { addHookTaskEntry, hasHookTaskEntry } from './tasksFile';
 
 export async function pickWorkspaceFolder(): Promise<vscode.WorkspaceFolder | undefined> {
@@ -80,4 +80,61 @@ export async function enableInWorkspace(log: (message: string) => void): Promise
   if (choice === 'Open tasks.json') {
     await vscode.window.showTextDocument(tasksUri);
   }
+}
+
+/** Writes a snapshot of the hook wiring to the output channel. */
+export async function showDiagnostics(
+  context: vscode.ExtensionContext,
+  log: (message: string) => void,
+): Promise<void> {
+  log('=== Worktree Shell Start diagnostics ===');
+  log(`extension: ${context.extension.id} v${String(context.extension.packageJSON.version)}`);
+  log(`extension host: ${process.platform} ${process.arch}, node ${process.version}`);
+  log(`runner: ${vscode.Uri.joinPath(context.extensionUri, RUNNER_RELATIVE_PATH).fsPath}`);
+  log(`workspace trusted: ${String(vscode.workspace.isTrusted)}`);
+
+  const folder = vscode.workspace.workspaceFolders?.[0];
+  if (folder === undefined) {
+    log('no workspace folder is open');
+  } else {
+    const config = readHookConfig(vscode.workspace.getConfiguration(SECTION, folder.uri));
+    const skip = decideSkip(config, vscode.workspace.isTrusted);
+    const scriptState =
+      config.script.trim() === '' ? 'empty' : `${String(config.script.trim().split('\n').length)} line(s)`;
+    log(`folder: ${folder.uri.fsPath}`);
+    log(
+      `settings: enabled=${String(config.enabled)} script=${scriptState} shell=${config.shell} ` +
+        `args=${String(config.args.length)} untrustedOverride=${String(config.allowUntrustedWorkspaces)}`,
+    );
+    log(`decision for this window: ${skip ?? 'run'}`);
+    log(`workspace tasks.json has the trigger: ${(await hasHookTaskEntry(folder.uri)) ? 'yes' : 'no'}`);
+  }
+
+  let discovered = 0;
+  try {
+    const tasks = await vscode.tasks.fetchTasks();
+    const ours = tasks.filter((task) => (task.definition as { type?: unknown }).type === TASK_TYPE);
+    discovered = ours.length;
+    log(`tasks visible to VS Code: ${String(tasks.length)} (worktree-shell-start: ${String(ours.length)})`);
+    for (const task of ours) {
+      const runOptions = (task as unknown as { runOptions?: { runOn?: string } }).runOptions;
+      log(`  - "${task.name}" scope=${describeScope(task)} runOn=${runOptions?.runOn ?? 'default'}`);
+    }
+    if (ours.length === 0) {
+      log(
+        '  -> no trigger found: run "Worktree Shell Start: Enable in this Workspace", ' +
+          'or add the same entry to your user tasks.',
+      );
+    }
+  } catch (error) {
+    log(`fetchTasks failed: ${String(error)}`);
+  }
+
+  log('=== end diagnostics ===');
+
+  void vscode.window.showInformationMessage(
+    discovered > 0
+      ? `Worktree Shell Start: ${String(discovered)} hook task(s) visible in this window. Details in the output channel.`
+      : 'Worktree Shell Start: no hook task is visible in this window, so nothing will run. Details in the output channel.',
+  );
 }
