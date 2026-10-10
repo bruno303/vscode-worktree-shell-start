@@ -2,6 +2,18 @@
 
 Runs a shell hook when VS Code creates a new Git worktree, exporting the repository and worktree paths as environment variables — so you can copy `.env` and other git-ignored files, or run any other per-worktree setup.
 
+## Getting started
+
+Three steps. The second one is easy to miss, and nothing runs without it.
+
+1. **Write the operations** in the **`worktreeShellStart.script`** setting — Settings → search for `worktree` and paste them into the multiline field (or set `"worktreeShellStart.script"` in `settings.json`). No shebang needed.
+2. **Run the command `Worktree Shell Start: Enable in this Workspace`** from the Command Palette (`Ctrl/Cmd+Shift+P`).
+
+   This step is **required**. It adds the `runOn: worktreeCreated` task to `.vscode/tasks.json`, and *that task* — not the setting on its own — is what makes VS Code call the hook when a worktree is created. With operations configured but no task entry, nothing runs and nothing tells you why. See [Where does the trigger have to live?](#where-does-the-trigger-have-to-live) for the manual entry and for applying it to every repository at once.
+3. **Create a worktree**: Command Palette → **Git: Create Worktree…**. A **Worktree hook** task terminal opens showing the exported variables and the output of your operations, and `View → Output → Worktree Shell Start` records `Hook finished successfully for <worktree path>.`
+
+To try the operations out first, without creating a worktree, run **Worktree Shell Start: Run Hook for Current Folder**.
+
 ## Why this exists
 
 `git worktree` gives you a clean checkout, but git-ignored files (`.env`, local config, caches) do not come along. VS Code can already copy those files (`git.worktreeIncludeFiles`) and symlink folders such as `node_modules` (`git.worktreeSymlinkFolders`). This extension covers everything beyond that: arbitrary shell operations, with useful paths exported.
@@ -12,26 +24,6 @@ Runs a shell hook when VS Code creates a new Git worktree, exporting the reposit
 - The worktree must be created **by VS Code** ("Git: Create Worktree…"). Worktrees created with `git worktree add` in a terminal cannot be detected: no stable VS Code API exposes them.
 - `git` 2.31+ is recommended (`git rev-parse --path-format=absolute`); older versions are handled with a fallback.
 - The `task.autoDetect` setting must not be `off`, otherwise task providers are never asked to resolve the hook task.
-
-## Setup
-
-1. Paste your operations into the **`worktreeShellStart.script`** setting (Settings → search for `worktree`, or edit settings.json). No shebang needed.
-2. Add the trigger to `.vscode/tasks.json` — easiest with the command **Worktree Shell Start: Enable in this Workspace**, or by hand:
-
-```jsonc
-{
-  "version": "2.0.0",
-  "tasks": [
-    {
-      "type": "worktree-shell-start",
-      "label": "Worktree hook",
-      "runOptions": { "runOn": "worktreeCreated" }
-    }
-  ]
-}
-```
-
-The trigger lives in `tasks.json` because the programmatic equivalent (`Task.runOptions`) is still a proposed API, which published extensions cannot use.
 
 ## Environment variables
 
@@ -81,6 +73,23 @@ The task entry is what makes the Git extension call the hook, so it has to exist
 
 - **Per repository** (recommended — committable, so everyone on the project gets it): `.vscode/tasks.json`, added by **Worktree Shell Start: Enable in this Workspace**.
 - **Once for every repository**: the identical entry in your **user tasks** (`Tasks: Open User Tasks` from the Command Palette).
+
+Either way the entry looks like this:
+
+```jsonc
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "worktree-shell-start",
+      "label": "Worktree hook",
+      "runOptions": { "runOn": "worktreeCreated" }
+    }
+  ]
+}
+```
+
+It has to live in `tasks.json` because the programmatic equivalent (`Task.runOptions`) is still a proposed API, which published extensions cannot use.
 
 The operations themselves come from the `worktreeShellStart.*` settings, which can also be set per workspace or globally in your user settings. Run **Worktree Shell Start: Show Diagnostics** to confirm that VS Code can actually see the task.
 
