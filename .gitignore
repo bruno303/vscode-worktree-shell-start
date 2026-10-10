@@ -6,3 +6,5 @@ dist/
 .fixtures/
 .vscode-test/
 npm-debug.log*
+
+.vscode/

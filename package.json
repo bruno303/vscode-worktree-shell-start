@@ -5,6 +5,10 @@
   "version": "0.0.1",
   "publisher": "bruno-oliveira-812",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bruno303/vscode-worktree-shell-start"
+  },
   "private": true,
   "engines": {
     "vscode": "^1.141.0"
