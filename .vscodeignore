@@ -1,0 +1,13 @@
+.gitignore
+.npm-cache/**
+.probe/**
+.fixtures/**
+.vscode/**
+src/**
+test/**
+scripts/**
+esbuild.mjs
+vitest.config.mts
+tsconfig.json
+node_modules/**
+**/*.map

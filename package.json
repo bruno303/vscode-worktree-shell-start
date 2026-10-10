@@ -1,0 +1,124 @@
+{
+  "name": "vscode-worktree-shell-start",
+  "displayName": "Worktree Shell Start",
+  "description": "Run a shell hook after Git creates a new worktree, with the repository/worktree paths exported as environment variables.",
+  "version": "0.0.1",
+  "publisher": "bruno-oliveira-812",
+  "license": "MIT",
+  "private": true,
+  "engines": {
+    "vscode": "^1.141.0"
+  },
+  "categories": [
+    "SCM Providers",
+    "Other"
+  ],
+  "extensionKind": [
+    "workspace"
+  ],
+  "main": "./dist/extension.js",
+  "capabilities": {
+    "virtualWorkspaces": false,
+    "untrustedWorkspaces": {
+      "supported": "limited",
+      "description": "The hook runs shell commands from configuration, so it is skipped in untrusted workspaces unless `worktreeShellStart.runInUntrustedWorkspaces` is enabled in user settings."
+    }
+  },
+  "activationEvents": [
+    "onStartupFinished",
+    "onTaskType:worktree-shell-start"
+  ],
+  "contributes": {
+    "taskDefinitions": [
+      {
+        "type": "worktree-shell-start",
+        "required": [],
+        "properties": {
+          "script": {
+            "type": "string",
+            "description": "Operations to run. Overrides the worktreeShellStart.script setting for this task."
+          },
+          "shell": {
+            "type": "string",
+            "description": "Shell used to run the operations. Overrides the worktreeShellStart.shell setting."
+          },
+          "args": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Arguments passed to the operations. Overrides the worktreeShellStart.args setting."
+          }
+        }
+      }
+    ],
+    "commands": [
+      {
+        "command": "worktreeShellStart.run",
+        "title": "Run Hook for Current Folder",
+        "category": "Worktree Shell Start"
+      },
+      {
+        "command": "worktreeShellStart.enable",
+        "title": "Enable in this Workspace",
+        "category": "Worktree Shell Start"
+      }
+    ],
+    "configuration": {
+      "title": "Worktree Shell Start",
+      "properties": {
+        "worktreeShellStart.enabled": {
+          "type": "boolean",
+          "default": true,
+          "scope": "resource",
+          "markdownDescription": "Run the worktree hook when Git creates a new worktree."
+        },
+        "worktreeShellStart.script": {
+          "type": "string",
+          "default": "",
+          "editPresentation": "multilineText",
+          "scope": "resource",
+          "markdownDescription": "Shell operations to run after a new worktree is created. No shebang needed: the value is written to a temporary script and executed with `#worktreeShellStart.shell#`.\n\nAvailable environment variables: `VSCODE_REPOSITORY_DIR` (main checkout), `VSCODE_WORKTREE_DIR`, `VSCODE_WORKTREE_NAME`, `VSCODE_WORKTREE_BRANCH`, `VSCODE_WORKTREE_REF`, `VSCODE_GIT_COMMON_DIR`.\n\nExample:\n```sh\ncp \"$VSCODE_REPOSITORY_DIR/.env\" \"$VSCODE_WORKTREE_DIR/.env\"\n```\n\nLeave empty to disable. Commands run without `set -e`; add it yourself to stop at the first failure."
+        },
+        "worktreeShellStart.shell": {
+          "type": "string",
+          "default": "bash",
+          "scope": "resource",
+          "markdownDescription": "Shell used to execute `#worktreeShellStart.script#`. Falls back to `sh` when the shell is not found in `PATH`."
+        },
+        "worktreeShellStart.args": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "scope": "resource",
+          "markdownDescription": "Arguments passed to the operations, available as `$1`, `$2`, ... inside the script."
+        },
+        "worktreeShellStart.runInUntrustedWorkspaces": {
+          "type": "boolean",
+          "default": false,
+          "scope": "window",
+          "markdownDescription": "Run the hook even when the workspace is not trusted. Only the value from **user** settings is honored; a workspace setting cannot enable this for itself."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "node esbuild.mjs",
+    "watch": "node esbuild.mjs --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "node esbuild.mjs && vitest run",
+    "test:watch": "vitest",
+    "package": "node esbuild.mjs --production && vsce package --no-dependencies"
+  },
+  "devDependencies": {
+    "@types/node": "^24",
+    "@types/vscode": "^1.140.0",
+    "@vscode/vsce": "^4.0.0",
+    "esbuild": "^0.28.2",
+    "jsonc-parser": "^3.3.1",
+    "typescript": "^5",
+    "vitest": "^5.0.3"
+  }
+}

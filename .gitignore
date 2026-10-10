@@ -1,0 +1,8 @@
+node_modules/
+dist/
+*.vsix
+.npm-cache/
+.probe/
+.fixtures/
+.vscode-test/
+npm-debug.log*
