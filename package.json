@@ -17,6 +17,16 @@
     "SCM Providers",
     "Other"
   ],
+  "keywords": [
+    "worktree",
+    "git worktree",
+    "hook",
+    "git",
+    "env",
+    "dotenv",
+    "copy files",
+    "branch"
+  ],
   "extensionKind": [
     "workspace"
   ],
@@ -114,12 +124,13 @@
     }
   },
   "scripts": {
+    "vscode:prepublish": "node esbuild.mjs --production",
     "build": "node esbuild.mjs",
     "watch": "node esbuild.mjs --watch",
     "typecheck": "tsc --noEmit",
     "test": "node esbuild.mjs && vitest run",
     "test:watch": "vitest",
-    "package": "node esbuild.mjs --production && vsce package --no-dependencies"
+    "package": "vsce package --no-dependencies"
   },
   "devDependencies": {
     "@types/node": "^24",
