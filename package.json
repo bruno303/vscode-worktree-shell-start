@@ -2,7 +2,7 @@
   "name": "vscode-worktree-shell-start",
   "displayName": "Worktree Shell Start",
   "description": "Run a shell hook after Git creates a new worktree, with the repository/worktree paths exported as environment variables.",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "publisher": "bruno-oliveira-812",
   "license": "MIT",
   "repository": {

@@ -12,6 +12,14 @@ const shared = {
   sourcemap: !production,
   minify: production,
   logLevel: 'info',
+  alias: {
+    // jsonc-parser's UMD build (the package `main`) hands `require` to its
+    // factory as a parameter, which esbuild cannot follow: the emitted bundle
+    // keeps `require('./impl/format')` calls and dies at load time with
+    // "Cannot find module './impl/format'". The ESM build uses static imports
+    // that esbuild bundles correctly, and its types live in the same folder.
+    'jsonc-parser': 'jsonc-parser/lib/esm/main.js',
+  },
 };
 
 /** @type {import('esbuild').BuildOptions[]} */
