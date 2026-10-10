@@ -2,13 +2,14 @@
   "name": "vscode-worktree-shell-start",
   "displayName": "Worktree Shell Start",
   "description": "Run a shell hook after Git creates a new worktree, with the repository/worktree paths exported as environment variables.",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "publisher": "bruno-oliveira-812",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/bruno303/vscode-worktree-shell-start"
   },
+  "icon": "images/icon.png",
   "private": true,
   "engines": {
     "vscode": "^1.141.0"
@@ -128,6 +129,7 @@
     "build": "node esbuild.mjs",
     "watch": "node esbuild.mjs --watch",
     "typecheck": "tsc --noEmit",
+    "icon": "node scripts/make-icon.mjs",
     "test": "node esbuild.mjs && vitest run",
     "test:watch": "vitest",
     "package": "vsce package --no-dependencies"

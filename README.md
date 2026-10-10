@@ -130,6 +130,8 @@ npm test        # builds, then runs unit + integration tests against a real git 
 npm run package # produces the .vsix
 ```
 
+The Marketplace icon is generated rather than hand-drawn: `npm run icon` rewrites `images/icon.png` from the geometry at the top of `scripts/make-icon.mjs`.
+
 ## Testing
 
 ### 1. The operations alone, no VS Code
@@ -176,7 +178,7 @@ A workspace extension has to be installed on the **WSL side**, not on Windows. T
 
 ```bash
 "$(find ~/.vscode-server/bin -maxdepth 3 -name code-server -type f | head -1)" \
-  --install-extension "$PWD/vscode-worktree-shell-start-0.0.2.vsix"
+  --install-extension "$PWD/vscode-worktree-shell-start-0.1.0.vsix"
 ```
 
 Then run **Developer: Reload Window**. You can also use **Extensions → … → Install from VSIX…** from a WSL window, but that file picker starts on the Windows side, so keeping a copy under `/mnt/c/…` is usually easier to reach.
