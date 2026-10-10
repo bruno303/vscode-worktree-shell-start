@@ -124,11 +124,17 @@ Newly created worktree windows hit this, because a fresh path has never been tru
 ## Development
 
 ```bash
-npm_config_cache="$PWD/.npm-cache" npm install   # ~/.npm is read-only in some sandboxes
+npm ci          # reproducible install; use npm_config_cache="$PWD/.npm-cache" if ~/.npm is read-only
+npm run lint    # ESLint (flat config, typescript-eslint)
 npm run typecheck
 npm test        # builds, then runs unit + integration tests against a real git repository
 npm run package # produces the .vsix
+npm run ci      # lint + typecheck + test, in the order CI runs them
 ```
+
+Every pull request and push to `main` runs lint, typecheck, test and package on Node 24 through [`.github/workflows/ci.yml`](.github/workflows/ci.yml), and uploads the built `.vsix` as an artifact. Publishing is not automated.
+
+[`test/package.test.ts`](test/package.test.ts) pins the published file list, because `vsce` ships every file that [`.vscodeignore`](.vscodeignore) does not exclude — a new config file would otherwise leak into the package silently.
 
 The Marketplace icon is generated rather than hand-drawn: `npm run icon` rewrites `images/icon.png` from the geometry at the top of `scripts/make-icon.mjs`.
 
