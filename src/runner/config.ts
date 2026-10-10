@@ -25,7 +25,7 @@ export function parseRunnerConfig(json: string | undefined): RunnerConfig {
   try {
     parsed = JSON.parse(json);
   } catch (error) {
-    throw new Error(`--config is not valid JSON: ${(error as Error).message}`);
+    throw new Error(`--config is not valid JSON: ${(error as Error).message}`, { cause: error });
   }
 
   if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
