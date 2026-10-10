@@ -1,4 +1,5 @@
 .gitignore
+.github/**
 .npm-cache/**
 .probe/**
 .fixtures/**
@@ -7,6 +8,7 @@ src/**
 test/**
 scripts/**
 esbuild.mjs
+eslint.config.mjs
 vitest.config.mts
 tsconfig.json
 node_modules/**
