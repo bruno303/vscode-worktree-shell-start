@@ -12,6 +12,7 @@ import { describe, expect, it } from 'vitest';
 const VSCE = resolve(process.cwd(), 'node_modules', '@vscode', 'vsce', 'vsce');
 
 const EXPECTED_FILES = [
+  'CHANGELOG.md',
   'LICENSE',
   'README.md',
   'dist/extension.js',
